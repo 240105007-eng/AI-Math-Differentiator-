@@ -1,0 +1,477 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Math Differentiator</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f2f5fc;
+    color: #24314d;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 850px;
+    margin: auto;
+}
+
+header {
+    text-align: center;
+    padding: 25px 0;
+}
+
+h1 {
+    color: #304cba;
+}
+
+.card {
+    background: white;
+    padding: 25px;
+    margin-bottom: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px #00000010;
+}
+
+button {
+    background: #405bd5;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 5px 5px 5px 0;
+    cursor: pointer;
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+button:hover:not(:disabled) {
+    background: #3045ac;
+}
+
+button.active {
+    background: #183083;
+}
+
+#problem {
+    font-size: 30px;
+    font-weight: bold;
+    text-align: center;
+    margin: 25px 0;
+}
+
+input {
+    width: 100%;
+    padding: 13px;
+    font-size: 16px;
+    border: 1px solid #cbd2e0;
+    border-radius: 8px;
+    margin: 10px 0;
+}
+
+.result {
+    background: #eef2ff;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 15px;
+    white-space: pre-line;
+}
+
+.correct {
+    background: #e0f5e8;
+    color: #176536;
+}
+
+.incorrect {
+    background: #ffe8e8;
+    color: #a32626;
+}
+
+.hidden {
+    display: none;
+}
+
+footer {
+    text-align: center;
+    color: #718096;
+    padding: 20px;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<header>
+    <h1>AI Math Differentiator</h1>
+    <p>Learn quadratic equations at your own level.</p>
+</header>
+
+<div class="card">
+    <h2>Choose Your Difficulty</h2>
+    <p>Select your learning level:</p>
+
+    <button id="foundationBtn"
+        onclick="selectLevel('foundation')">
+        Level 1: Foundation
+    </button>
+
+    <button id="standardBtn"
+        onclick="selectLevel('standard')">
+        Level 2: Standard
+    </button>
+
+    <button id="advancedBtn"
+        onclick="selectLevel('advanced')">
+        Level 3: Advanced
+    </button>
+</div>
+
+<div class="card">
+    <h2 id="levelTitle">Level 1: Foundation</h2>
+    <p id="description"></p>
+
+    <h3>Practice Problem</h3>
+    <div id="problem"></div>
+
+    <button onclick="showHint()">Show Hint</button>
+    <button onclick="showSolution()">Show Solution</button>
+    <button onclick="newProblem()">New Example</button>
+    <button id="generateBtn" onclick="generateAIQuestion()">Generate AI Question ✨</button>
+    <button id="askAiBtn" onclick="askAI()">Ask AI ✨</button>
+
+    <div id="hint" class="result hidden"></div>
+    <div id="solution" class="result hidden"></div>
+    <div id="aiAnswer" class="result hidden" role="status" aria-live="polite"></div>
+    <div id="generateStatus" class="result hidden" role="status" aria-live="polite"></div>
+
+    <h3>Enter Your Answer</h3>
+    <p>Enter both roots separated by a comma.</p>
+    <p>Example: 2, 3</p>
+
+    <input type="text" id="studentAnswer"
+        placeholder="Enter your answer">
+
+    <button onclick="checkAnswer()">Check Answer</button>
+    <button onclick="clearAnswer()">Clear</button>
+
+    <div id="feedback" class="result hidden"></div>
+</div>
+
+<div class="card">
+    <h2>About This Learning Tool</h2>
+    <p>
+        This website helps students practise quadratic
+        equations through differentiated learning.
+    </p>
+    <p>
+        Choose your level, practise quadratic equations,
+        generate fresh AI questions, and ask Groq AI for explanations.
+    </p>
+</div>
+
+<footer>
+    AI Math Differentiator | Mathematics Learning
+</footer>
+
+</div>
+
+<script>
+
+const levels = {
+    foundation: {
+        title: "Level 1: Foundation",
+        description: "Solve simple quadratic equations.",
+        problems: [
+            {
+                question: "x² - 5x + 6 = 0",
+                answers: [2, 3],
+                hint: "Find two numbers that multiply to 6 and add to -5.",
+                solution: "(x - 2)(x - 3) = 0\nx = 2 or x = 3"
+            },
+            {
+                question: "x² - 7x + 12 = 0",
+                answers: [3, 4],
+                hint: "Find two numbers that multiply to 12 and add to -7.",
+                solution: "(x - 3)(x - 4) = 0\nx = 3 or x = 4"
+            }
+        ]
+    },
+
+    standard: {
+        title: "Level 2: Standard",
+        description: "Solve equations with coefficients.",
+        problems: [
+            {
+                question: "2x² - 7x + 3 = 0",
+                answers: [0.5, 3],
+                hint: "Try factorising into two brackets.",
+                solution: "(2x - 1)(x - 3) = 0\nx = 1/2 or x = 3"
+            },
+            {
+                question: "2x² - 9x + 4 = 0",
+                answers: [0.5, 4],
+                hint: "Find two brackets whose product gives the equation.",
+                solution: "(2x - 1)(x - 4) = 0\nx = 1/2 or x = 4"
+            }
+        ]
+    },
+
+    advanced: {
+        title: "Level 3: Advanced",
+        description: "Solve challenging quadratic equations.",
+        problems: [
+            {
+                question: "3x² - 10x + 3 = 0",
+                answers: [1/3, 3],
+                hint: "Split the middle term using -9 and -1.",
+                solution: "3x² - 9x - x + 3 = 0\n(3x - 1)(x - 3) = 0\nx = 1/3 or x = 3"
+            },
+            {
+                question: "2x² + x - 6 = 0",
+                answers: [1.5, -2],
+                hint: "Find two numbers that multiply to -12 and add to 1.",
+                solution: "(2x - 3)(x + 2) = 0\nx = 3/2 or x = -2"
+            }
+        ]
+    }
+};
+
+let currentLevel = "foundation";
+let currentIndex = 0;
+let aiRequestId = 0;
+let generationRequestId = 0;
+
+function selectLevel(level) {
+    generationRequestId++;
+    document.getElementById("generateBtn").disabled = false;
+    document.getElementById("generateBtn").textContent = "Generate AI Question ✨";
+    document.getElementById("generateStatus").className = "result hidden";
+    currentLevel = level;
+    currentIndex = 0;
+    displayProblem();
+}
+
+function displayProblem() {
+    // Hide old AI explanations whenever the problem changes.
+    aiRequestId++;
+    document.getElementById("aiAnswer").textContent = "";
+    document.getElementById("aiAnswer").className = "result hidden";
+    document.getElementById("askAiBtn").disabled = false;
+    document.getElementById("askAiBtn").textContent = "Ask AI ✨";
+    const level = levels[currentLevel];
+    const task = level.problems[currentIndex];
+
+    document.getElementById("levelTitle").textContent =
+        level.title;
+
+    document.getElementById("description").textContent =
+        level.description;
+
+    document.getElementById("problem").textContent =
+        task.question;
+
+    document.getElementById("hint").textContent =
+        "Hint: " + task.hint;
+
+    document.getElementById("solution").textContent =
+        "Solution:\n" + task.solution;
+
+    document.getElementById("hint").classList.add("hidden");
+    document.getElementById("solution").classList.add("hidden");
+
+    for (const name of ["foundation", "standard", "advanced"]) {
+        document.getElementById(name + "Btn")
+            .classList.toggle("active", name === currentLevel);
+    }
+
+    clearAnswer();
+}
+
+function showHint() {
+    document.getElementById("hint").classList.remove("hidden");
+}
+
+function showSolution() {
+    document.getElementById("solution").classList.remove("hidden");
+}
+
+function newProblem() {
+    generationRequestId++;
+    document.getElementById("generateBtn").disabled = false;
+    document.getElementById("generateBtn").textContent = "Generate AI Question ✨";
+    document.getElementById("generateStatus").className = "result hidden";
+    const problems = levels[currentLevel].problems;
+    currentIndex = (currentIndex + 1) % problems.length;
+    displayProblem();
+}
+
+async function generateAIQuestion() {
+    const level = currentLevel;
+    const requestId = ++generationRequestId;
+    const button = document.getElementById("generateBtn");
+    const status = document.getElementById("generateStatus");
+    button.disabled = true;
+    button.textContent = "Generating...";
+    status.className = "result";
+    status.textContent = "Groq AI is creating a new quadratic equation...";
+
+    try {
+        const response = await fetch("/api/generate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ level })
+        });
+        const data = await response.json();
+        if (requestId !== generationRequestId || level !== currentLevel) return;
+        if (!response.ok) throw new Error(data.error || "Generation failed.");
+        const problem = data.problem;
+        if (!problem || typeof problem.question !== "string" ||
+            !Array.isArray(problem.answers) || problem.answers.length !== 2 ||
+            !problem.answers.every(Number.isFinite)) {
+            throw new Error("Server returned an invalid problem.");
+        }
+        // Add the AI-generated problem to the current level's practice list.
+        levels[level].problems.push(problem);
+        currentIndex = levels[level].problems.length - 1;
+        displayProblem();
+        status.className = "result correct";
+        status.textContent = "New AI-generated question ready! Try solving it.";
+    } catch (error) {
+        if (requestId !== generationRequestId) return;
+        status.className = "result incorrect";
+        status.textContent = "Could not generate a question: " + error.message;
+    } finally {
+        if (requestId === generationRequestId) {
+            button.disabled = false;
+            button.textContent = "Generate AI Question ✨";
+        }
+    }
+}
+
+async function askAI() {
+    const task = levels[currentLevel].problems[currentIndex];
+    const level = currentLevel;
+    const question = task.question;
+    const requestId = ++aiRequestId;
+    const button = document.getElementById("askAiBtn");
+    const output = document.getElementById("aiAnswer");
+
+    button.disabled = true;
+    button.textContent = "AI is thinking...";
+    output.className = "result";
+    output.textContent = "Asking Groq AI to explain this equation...";
+
+    try {
+        const response = await fetch("/api/ai", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ level, question })
+        });
+        const data = await response.json();
+
+        // Don't show an explanation for a problem that was changed meanwhile.
+        if (requestId !== aiRequestId) return;
+
+        if (!response.ok) {
+            throw new Error(data.error || "The AI server returned an error.");
+        }
+        if (typeof data.answer !== "string" || !data.answer.trim()) {
+            throw new Error("The AI did not return an explanation.");
+        }
+        output.textContent = "Groq AI explanation:\n\n" + data.answer;
+    } catch (error) {
+        if (requestId !== aiRequestId) return;
+        output.textContent = "Could not get an AI explanation. " + error.message +
+            " Make sure node server.js is running and open http://localhost:3000.";
+    } finally {
+        if (requestId === aiRequestId) {
+            button.disabled = false;
+            button.textContent = "Ask AI ✨";
+        }
+    }
+}
+
+function parseRoot(value) {
+    value = value.trim().replace(/\s/g, "");
+
+    if (value === "") return NaN;
+
+    if (value.includes("/")) {
+        const parts = value.split("/");
+        if (parts.length !== 2) return NaN;
+
+        const numerator = Number(parts[0]);
+        const denominator = Number(parts[1]);
+
+        if (!Number.isFinite(numerator) ||
+            !Number.isFinite(denominator) ||
+            denominator === 0) {
+            return NaN;
+        }
+
+        return numerator / denominator;
+    }
+
+    return Number(value);
+}
+
+function checkAnswer() {
+    const input = document.getElementById("studentAnswer").value;
+    const feedback = document.getElementById("feedback");
+
+    feedback.className = "result";
+
+    const roots = input.split(",").map(parseRoot);
+    const correctRoots =
+        levels[currentLevel].problems[currentIndex].answers;
+
+    if (roots.length !== 2 ||
+        roots.some(x => !Number.isFinite(x))) {
+        feedback.textContent =
+            "Please enter two valid roots, separated by a comma.";
+        feedback.classList.add("incorrect");
+        return;
+    }
+
+    const a = [...roots].sort((x, y) => x - y);
+    const b = [...correctRoots].sort((x, y) => x - y);
+
+    const correct =
+        Math.abs(a[0] - b[0]) < 0.000001 &&
+        Math.abs(a[1] - b[1]) < 0.000001;
+
+    if (correct) {
+        feedback.textContent =
+            "Correct! Well done!";
+        feedback.classList.add("correct");
+    } else {
+        feedback.textContent =
+            "Not quite. Try again or use the hint.";
+        feedback.classList.add("incorrect");
+    }
+}
+
+function clearAnswer() {
+    document.getElementById("studentAnswer").value = "";
+    const feedback = document.getElementById("feedback");
+    feedback.textContent = "";
+    feedback.className = "result hidden";
+}
+
+displayProblem();
+
+</script>
+</body>
+</html>
